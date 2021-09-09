@@ -21,14 +21,9 @@ end
 defmodule Banking.Features.Deposit.Handler do
   alias Banking.Projector
   alias Banking.Features.Deposit.Command
-  alias Banking.Events.{BankAccountOpened, MoneyDeposited}
+  alias Banking.Events.MoneyDeposited
 
   def handle(events, %Command{} = command) do
-    account_was_opened = 
-      events
-      |> Enum.filter(&(match?(%BankAccountOpened{}, &1)))
-      |> length() > 0
-
     with :ok <- validate_account_is_open(events),
          :ok <- validate_amount(command) do
       events = 

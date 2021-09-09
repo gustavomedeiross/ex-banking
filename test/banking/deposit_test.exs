@@ -19,12 +19,14 @@ defmodule Banking.FeaturesTest.Deposit do
 
     test "Customer can't deposit zero" do
       command = build_command(%{amount: 0_00})
-      assert {:error, :the_deposited_amount_must_be_positive} = Handler.handle([@a_opened_account], command)
+      result = Handler.handle([@a_opened_account], command)
+      assert {:error, :the_deposited_amount_must_be_positive} = result
     end
 
     test "Customer can't deposit a negative value" do
       command = build_command(%{amount: -30_00})
-      assert {:error, :the_deposited_amount_must_be_positive} = Handler.handle([@a_opened_account], command)
+      result = Handler.handle([@a_opened_account], command)
+      assert {:error, :the_deposited_amount_must_be_positive} = result
     end
   end
 

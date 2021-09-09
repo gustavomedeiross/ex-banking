@@ -20,12 +20,12 @@ end
 defmodule Banking.Features.Withdraw.Handler do
   alias Banking.Projector
   alias Banking.Features.Withdraw.Command
-  alias Banking.Events.{BankAccountOpened, MoneyWithdrawn}
+  alias Banking.Events.MoneyWithdrawn
 
   def handle(events, %Command{} = command) do
-    with :ok <- was_account_opened?(events),
-         :ok <- is_amount_positive?(command),
-         :ok <- does_the_account_have_enough_funds?(events, command) do
+    with :ok <- validate_account_is_open(events),
+         :ok <- validate_amount(command),
+         :ok <- validate_account_has_enough_funds(events, command) do
       events = 
         command
         |> Map.from_struct()
@@ -35,16 +35,16 @@ defmodule Banking.Features.Withdraw.Handler do
     end
   end
 
-  defp was_account_opened?(events) do
-    events
-    |> Enum.any?(&(match?(%BankAccountOpened{}, &1)))
-    |> case  do
-       true -> :ok
-       false -> {:error, :account_not_opened}
+  defp validate_account_is_open(events) do
+    account = Projector.project(events)
+    if account.open do
+      :ok
+    else
+      {:error, :account_must_be_open}
     end
   end
 
-  defp is_amount_positive?(command) do
+  defp validate_amount(command) do
     if command.amount > 0 do
       :ok
     else
@@ -52,7 +52,7 @@ defmodule Banking.Features.Withdraw.Handler do
     end
   end
 
-  defp does_the_account_have_enough_funds?(events, command) do
+  defp validate_account_has_enough_funds(events, command) do
     %{balance: balance} = Projector.project(events)
     if balance >= command.amount do
       :ok
