@@ -4,7 +4,7 @@ defmodule Banking.FeaturesTest.Deposit do
   alias Banking.Features.Deposit.{Command, Handler}
   alias Banking.Events.{BankAccountOpened, MoneyDeposited}
 
-  describe "Depositing money into a bank account" do
+  describe "Depositing money to a bank account" do
     test "The account should be opened in order to deposit money" do
       command = 
         Command.changeset(%Command{}, %{amount: 50})
