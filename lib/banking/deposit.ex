@@ -19,6 +19,7 @@ end
 
 
 defmodule Banking.Features.Deposit.Handler do
+  alias Banking.Projector
   alias Banking.Features.Deposit.Command
   alias Banking.Events.{BankAccountOpened, MoneyDeposited}
 
@@ -28,15 +29,31 @@ defmodule Banking.Features.Deposit.Handler do
       |> Enum.filter(&(match?(%BankAccountOpened{}, &1)))
       |> length() > 0
 
-    if account_was_opened do
+    with :ok <- validate_account_is_open(events),
+         :ok <- validate_amount(command) do
       events = 
         command
         |> Map.from_struct()
         |> MoneyDeposited.new()
         |> List.wrap()
       {:ok, events}
+    end
+  end
+
+  defp validate_account_is_open(events) do
+    account = Projector.project(events)
+    if account.open do
+      :ok
     else
-      {:error, :account_not_opened}
+      {:error, :account_must_be_open}
+    end
+  end
+
+  defp validate_amount(command) do
+    if command.amount > 0 do
+      :ok
+    else
+      {:error, :the_deposited_amount_must_be_positive}
     end
   end
 end

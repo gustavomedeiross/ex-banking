@@ -4,26 +4,32 @@ defmodule Banking.FeaturesTest.Deposit do
   alias Banking.Features.Deposit.{Command, Handler}
   alias Banking.Events.{BankAccountOpened, MoneyDeposited}
 
+  @a_opened_account %BankAccountOpened{id: Ecto.UUID.generate(), initial_balance: 0}
+
   describe "Depositing money to a bank account" do
-    test "The account should be opened in order to deposit money" do
-      command = 
-        Command.changeset(%Command{}, %{amount: 50})
-        |> Ecto.Changeset.apply_changes()
-
-      assert {:error, :account_not_opened} = Handler.handle([], command)
+    test "The account should be open in order to deposit money" do
+      command = build_command(%{amount: 50_00})
+      assert {:error, :account_must_be_open} = Handler.handle([], command)
     end
 
-    test "User can deposit a positive amount with a opened account" do
-      command = 
-        Command.changeset(%Command{}, %{amount: 50_00})
-        |> Ecto.Changeset.apply_changes()
-
-      {:ok, events} = Handler.handle([
-        %BankAccountOpened{id: Ecto.UUID.generate(), initial_balance: 0}
-      ], command)
-      assert [
-        %MoneyDeposited{amount: 50_00}
-      ] = events
+    test "Customer can deposit a positive amount with a opened account" do
+      {:ok, events} = Handler.handle([@a_opened_account], build_command(%{amount: 50_00}))
+      assert [%MoneyDeposited{amount: 50_00}] = events
     end
+
+    test "Customer can't deposit zero" do
+      command = build_command(%{amount: 0_00})
+      assert {:error, :the_deposited_amount_must_be_positive} = Handler.handle([@a_opened_account], command)
+    end
+
+    test "Customer can't deposit a negative value" do
+      command = build_command(%{amount: -30_00})
+      assert {:error, :the_deposited_amount_must_be_positive} = Handler.handle([@a_opened_account], command)
+    end
+  end
+
+  defp build_command(%{} = data) do
+    Command.changeset(%Command{}, data)
+    |> Ecto.Changeset.apply_action!(:update)
   end
 end
