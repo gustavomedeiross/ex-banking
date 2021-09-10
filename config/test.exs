@@ -12,6 +12,9 @@ config :banking, Banking.Repo,
   hostname: "localhost",
   pool: Ecto.Adapters.SQL.Sandbox
 
+config :banking, Banking.EventStoreDB,
+  connection_string: "esdb://localhost:2113"
+
 # We don't run a server during test. If one is required,
 # you can enable the server option below.
 config :banking, BankingWeb.Endpoint,

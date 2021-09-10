@@ -9,6 +9,8 @@ defmodule Banking.Application do
     children = [
       # Start the Ecto repository
       Banking.Repo,
+      # Start spear's eventstore wrapper
+      Banking.EventStoreDB,
       # Start the Telemetry supervisor
       BankingWeb.Telemetry,
       # Start the PubSub system
@@ -21,8 +23,7 @@ defmodule Banking.Application do
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
-    opts = [strategy: :one_for_one, name: Banking.Supervisor]
-    Supervisor.start_link(children, opts)
+    Supervisor.start_link(children, strategy: :one_for_one, name: Banking.Supervisor)
   end
 
   # Tell Phoenix to update the endpoint configuration
