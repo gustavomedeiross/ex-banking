@@ -7,6 +7,9 @@ defmodule BankingWeb.Router do
 
   scope "/api", BankingWeb do
     pipe_through :api
+
+    post "/accounts", OpenBankAccountController, :create
+    post "/accounts/:id/deposits", DepositController, :create
   end
 
   # Enables LiveDashboard only for development
