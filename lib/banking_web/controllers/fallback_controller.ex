@@ -6,11 +6,28 @@ defmodule BankingWeb.FallbackController do
   """
   use BankingWeb, :controller
 
+
+  # This clause handles errors returned by Ecto's insert/update/delete.
+  def call(conn, {:error, %Ecto.Changeset{} = changeset}) do
+    conn
+    |> put_status(:unprocessable_entity)
+    |> put_view(BankingWeb.ChangesetView)
+    |> render("error.json", changeset: changeset)
+  end
+
   # This clause is an example of how to handle resources that cannot be found.
   def call(conn, {:error, :not_found}) do
     conn
     |> put_status(:not_found)
     |> put_view(BankingWeb.ErrorView)
     |> render(:"404")
+  end
+
+  # This clause handles custom business logic error messages
+  def call(conn, {:error, message}) when is_binary(message) or is_atom(message) do
+    conn
+    |> put_status(:conflict)
+    |> put_view(BankingWeb.ErrorMessageView)
+    |> render("error.json", message: message)
   end
 end

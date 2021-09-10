@@ -10,6 +10,7 @@ defmodule BankingWeb.Router do
 
     post "/accounts", OpenBankAccountController, :create
     post "/accounts/:id/deposits", DepositController, :create
+    post "/accounts/:id/withdraws", WithdrawController, :create
   end
 
   # Enables LiveDashboard only for development
